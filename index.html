@@ -53,8 +53,8 @@
 
       // Jiggle parameters
       const jiggleAmount = 500;
-      let isHovering = false;
-      let jiggleTimeout;
+      var isHovering = false;
+      var jiggleTimeout;
 
       // Mouse enter event
       letterA.on('mouseenter', function () {
@@ -100,6 +100,20 @@
         jiggleTimeout = setTimeout(jiggleLetter, 50 + Math.random() * 100);
       }
 
+      var hue = 0;
+
+      view.onFrame = function (event) {
+        letterA.rotate(3);
+
+        hue = (hue + 1) % 360;
+
+        letterA.fillColor = {
+          hue: hue,
+          saturation: 0.8,
+          lightness: 0.6
+        }
+      }
+
       // Handle window resize
       window.addEventListener('resize', function () {
         paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
@@ -107,12 +121,26 @@
         originalPosition.set(view.center);
       });
 
+      const scaleFactor = 2;
+
       // Make the letter interactive
       letterA.on('click', function () {
         // Little bounce effect on click
-        letterA.scale(1.2);
+        letterA.tween(
+          { scaling: [scaleFactor, scaleFactor] },
+          {
+            duration: 150,
+            easing: 'easeInOutQuad'
+          }
+        );
         setTimeout(function () {
-          letterA.scale(1 / 1.2);
+          letterA.tween(
+            { scaling: [1, 1] },
+            {
+              duration: 300,
+              easing: 'easeInOutQuad'
+            }
+          );
         }, 300);
       });
     });
