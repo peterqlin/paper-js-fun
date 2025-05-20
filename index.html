@@ -35,7 +35,7 @@
       paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
 
       // Create the letter A
-      const letterA = new PointText({
+      const buhText = new PointText({
         point: view.center,
         content: 'buh',
         fillColor: 'black',
@@ -46,10 +46,10 @@
       });
 
       // Center the letter precisely
-      letterA.position = view.center;
+      buhText.position = view.center;
 
       // Store original position for resetting
-      const originalPosition = letterA.position.clone();
+      const originalPosition = buhText.position.clone();
 
       // Jiggle parameters
       const jiggleAmount = 500;
@@ -57,20 +57,20 @@
       var jiggleTimeout;
 
       // Mouse enter event
-      letterA.on('mouseenter', function () {
+      buhText.on('mouseenter', function () {
         isHovering = true;
         clearTimeout(jiggleTimeout);
         jiggleLetter();
       });
 
       // Mouse leave event
-      letterA.on('mouseleave', function () {
+      buhText.on('mouseleave', function () {
         isHovering = false;
         clearTimeout(jiggleTimeout);
 
         // Smooth return to original position
-        letterA.tween(
-          { position: letterA.position },
+        buhText.tween(
+          { position: buhText.position },
           { position: originalPosition },
           {
             duration: 300,
@@ -87,8 +87,8 @@
         const offsetX = (Math.random() - 0.5) * jiggleAmount;
         const offsetY = (Math.random() - 0.5) * jiggleAmount;
 
-        letterA.tween(
-          { position: letterA.position },
+        buhText.tween(
+          { position: buhText.position },
           { position: new Point(originalPosition.x + offsetX, originalPosition.y + offsetY) },
           {
             duration: 300,
@@ -101,32 +101,58 @@
       }
 
       var hue = 0;
+      var saturation = 0;
 
       view.onFrame = function (event) {
-        letterA.rotate(3);
+        buhText.rotate(3);
 
         hue = (hue + 1) % 360;
 
-        letterA.fillColor = {
+        buhText.fillColor = {
           hue: hue,
           saturation: 0.8,
           lightness: 0.6
         }
+
+        buddies.forEach((buddy, index) => {
+          var budHue = buddy.fillColor.hue;
+          var budScale = 2 + Math.sin((event.time + index * 10) * 2);
+          buddy.rotate(Math.pow(-1, (index % 2)) * 5);
+          buddy.scaling = [budScale, budScale];
+        });
       }
 
       // Handle window resize
       window.addEventListener('resize', function () {
         paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
-        letterA.position = view.center;
+        buhText.position = view.center;
         originalPosition.set(view.center);
       });
 
       const scaleFactor = 2;
+      const prefixes = ['b', 'h', 'g', 'pl', 'fl', 't', 'p', 'c', 'w', 'm'];
+      var buddies = [];
 
       // Make the letter interactive
-      letterA.on('click', function () {
+      buhText.on('click', function () {
+        buddies.push(
+          new PointText({
+            point: view.center,
+            content: prefixes[Math.floor(Math.random() * prefixes.length)] + 'uh',
+            fillColor: buhText.fillColor,
+            fontFamily: 'Times New Roman',
+            fontWeight: 'bold',
+            fontSize: 40,
+            justification: 'center'
+          }));
+
+        var newBuddy = buddies[buddies.length - 1];
+        newBuddy.position = new Point(
+          Math.random() * view.size.width,
+          Math.random() * view.size.height
+        );
         // Little bounce effect on click
-        letterA.tween(
+        buhText.tween(
           { scaling: [scaleFactor, scaleFactor] },
           {
             duration: 150,
@@ -134,7 +160,7 @@
           }
         );
         setTimeout(function () {
-          letterA.tween(
+          buhText.tween(
             { scaling: [1, 1] },
             {
               duration: 300,
