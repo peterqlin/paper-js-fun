@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Jiggly Letter A with Paper.js</title>
+  <!-- Load Paper.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #f0f0f0;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Canvas will be created by Paper.js -->
+
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      // Paper.js setup
+      paper.install(window);
+      paper.setup(document.createElement('canvas'));
+      document.body.appendChild(paper.view.element);
+
+      // Set the view size to window dimensions
+      paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
+
+      // Create the letter A
+      const letterA = new PointText({
+        point: view.center,
+        content: 'buh',
+        fillColor: 'black',
+        fontFamily: 'Times New Roman',
+        fontWeight: 'bold',
+        fontSize: 120,
+        justification: 'center'
+      });
+
+      // Center the letter precisely
+      letterA.position = view.center;
+
+      // Store original position for resetting
+      const originalPosition = letterA.position.clone();
+
+      // Jiggle parameters
+      const jiggleAmount = 500;
+      let isHovering = false;
+      let jiggleTimeout;
+
+      // Mouse enter event
+      letterA.on('mouseenter', function () {
+        isHovering = true;
+        clearTimeout(jiggleTimeout);
+        jiggleLetter();
+      });
+
+      // Mouse leave event
+      letterA.on('mouseleave', function () {
+        isHovering = false;
+        clearTimeout(jiggleTimeout);
+
+        // Smooth return to original position
+        letterA.tween(
+          { position: letterA.position },
+          { position: originalPosition },
+          {
+            duration: 300,
+            easing: 'easeInOutQuad'
+          }
+        );
+      });
+
+      // Jiggle animation function
+      function jiggleLetter() {
+        if (!isHovering) return;
+
+        // Random offset for jiggle effect
+        const offsetX = (Math.random() - 0.5) * jiggleAmount;
+        const offsetY = (Math.random() - 0.5) * jiggleAmount;
+
+        letterA.tween(
+          { position: letterA.position },
+          { position: new Point(originalPosition.x + offsetX, originalPosition.y + offsetY) },
+          {
+            duration: 300,
+            easing: 'easeInOutQuad'
+          }
+        );
+
+        // Continue jiggling with random timing for organic feel
+        jiggleTimeout = setTimeout(jiggleLetter, 50 + Math.random() * 100);
+      }
+
+      // Handle window resize
+      window.addEventListener('resize', function () {
+        paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
+        letterA.position = view.center;
+        originalPosition.set(view.center);
+      });
+
+      // Make the letter interactive
+      letterA.on('click', function () {
+        // Little bounce effect on click
+        letterA.scale(1.2);
+        setTimeout(function () {
+          letterA.scale(1 / 1.2);
+        }, 300);
+      });
+    });
+  </script>
+</body>
+
+</html>
