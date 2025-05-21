@@ -4,7 +4,6 @@
 <head>
   <title>among ඞ us</title>
   <link rel="icon" type="image/png" href="favicon.ico">
-  <!-- Load Paper.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
   <style>
     html,
@@ -24,7 +23,8 @@
 <body>
 
   <script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function () {
+    // inspired by koalastothemax.com
+    document.addEventListener('DOMContentLoaded', () => {
       paper.install(window);
       paper.setup(document.createElement('canvas'));
       document.body.appendChild(paper.view.element);
@@ -34,7 +34,7 @@
 
       var raster = new Raster('amongus.jpg');
       var loaded = false;
-      raster.on('load', function () {
+      raster.on('load', () => {
         loaded = true;
         onResize();
       });
@@ -49,6 +49,23 @@
           return;
 
         event.target.remove();
+
+        var tempCircle = new Path.Circle({
+          center: refCenter,
+          radius: radius,
+          fillColor: raster.getAverageColor(new Rectangle(refCenter.subtract([radius, radius]), new Size(radius * 2, radius * 2))),
+          applyMatrix: false
+        });
+        tempCircle.tweenTo(
+          { opacity: 0 },
+          {
+            duration: 250,
+            easing: 'easeInOutQuad'
+          }
+        );
+        setTimeout(() => {
+          tempCircle.remove();
+        }, 250);
 
         radius /= 2;
 
@@ -70,7 +87,7 @@
           circle.tweenTo(
             { position: pos },
             {
-              duration: 175,
+              duration: 250,
               easing: 'easeInOutQuad'
             }
           );
