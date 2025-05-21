@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>what the buh</title>
+  <title>among ඞ us</title>
   <link rel="icon" type="image/png" href="favicon.ico">
   <!-- Load Paper.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
@@ -30,8 +30,7 @@
       document.body.appendChild(paper.view.element);
 
       var width = getSmallestPowerOf2(Math.min(window.innerWidth, window.innerHeight));
-      paper.view.viewSize = new Size(width, width);
-
+      paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
 
       var raster = new Raster('amongus.jpg');
       var loaded = false;
@@ -82,14 +81,13 @@
 
       window.addEventListener('resize', onResize);
 
-      // add zooming in to full size
       function onResize(event) {
         if (!loaded)
           return
         project.activeLayer.removeChildren();
 
         var width = getSmallestPowerOf2(Math.min(window.innerWidth, window.innerHeight));
-        paper.view.viewSize = new Size(width, width);
+        paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
 
         raster.fitBounds(view.bounds, true);
 
@@ -97,8 +95,19 @@
           center: view.bounds.center,
           radius: width / 2,
           fillColor: raster.getAverageColor(view.bounds),
-          onMouseMove: (event) => moveHandler(event, new Point(view.bounds.center.x, view.bounds.center.y), width / 2)
+          onMouseMove: (event) => moveHandler(event, new Point(view.bounds.center.x, view.bounds.center.y), width / 2),
+          applyMatrix: false
         });
+
+        // enlarge circle and fade in upon first loading
+        circle.tween(
+          { opacity: 0, scaling: 0.0001 },
+          { opacity: 1, scaling: 1 },
+          {
+            duration: 500,
+            easing: 'easeInOutQuad'
+          }
+        );
       }
 
       function getSmallestPowerOf2(limit) {
