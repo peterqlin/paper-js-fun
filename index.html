@@ -15,160 +15,99 @@
       background-color: #f0f0f0;
     }
 
-    canvas {
+    #paperCanvas {
       display: block;
     }
   </style>
 </head>
 
 <body>
-  <!-- Canvas will be created by Paper.js -->
 
   <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function () {
-      // Paper.js setup
       paper.install(window);
       paper.setup(document.createElement('canvas'));
       document.body.appendChild(paper.view.element);
 
-      // Set the view size to window dimensions
-      paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
+      var width = getSmallestPowerOf2(Math.min(window.innerWidth, window.innerHeight));
+      paper.view.viewSize = new Size(width, width);
 
-      // Create the letter A
-      const buhText = new PointText({
-        point: view.center,
-        content: 'buh',
-        fillColor: 'black',
-        fontFamily: 'Times New Roman',
-        fontWeight: 'bold',
-        fontSize: 120,
-        justification: 'center'
+
+      var raster = new Raster('amongus.jpg');
+      var loaded = false;
+      raster.on('load', function () {
+        loaded = true;
+        onResize();
       });
 
-      // Center the letter precisely
-      buhText.position = view.center;
+      raster.visible = false;
 
-      // Store original position for resetting
-      const originalPosition = buhText.position.clone();
+      function moveHandler(event, refCenter, radius) {
+        if (!loaded)
+          return;
 
-      // Jiggle parameters
-      const jiggleAmount = 500;
-      var isHovering = false;
-      var jiggleTimeout;
+        if (radius < 4)
+          return;
 
-      // Mouse enter event
-      buhText.on('mouseenter', function () {
-        isHovering = true;
-        clearTimeout(jiggleTimeout);
-        jiggleLetter();
-      });
+        event.target.remove();
 
-      // Mouse leave event
-      buhText.on('mouseleave', function () {
-        isHovering = false;
-        clearTimeout(jiggleTimeout);
+        radius /= 2;
 
-        // Smooth return to original position
-        buhText.tween(
-          { position: buhText.position },
-          { position: originalPosition },
-          {
-            duration: 300,
-            easing: 'easeInOutQuad'
-          }
-        );
-      });
+        var positions = [
+          refCenter.add(new Point(-radius, -radius)),
+          refCenter.add(new Point(-radius, radius)),
+          refCenter.add(new Point(radius, -radius)),
+          refCenter.add(new Point(radius, radius)),
+        ];
 
-      // Jiggle animation function
-      function jiggleLetter() {
-        if (!isHovering) return;
+        var circles = positions.map(pos => {
+          var circle = new Path.Circle({
+            center: refCenter,
+            radius: radius,
+            fillColor: raster.getAverageColor(new Rectangle(pos.subtract([radius, radius]), new Size(radius * 2, radius * 2))),
+            onMouseMove: (event) => moveHandler(event, pos, radius)
+          });
 
-        // Random offset for jiggle effect
-        const offsetX = (Math.random() - 0.5) * jiggleAmount;
-        const offsetY = (Math.random() - 0.5) * jiggleAmount;
-
-        buhText.tween(
-          { position: buhText.position },
-          { position: new Point(originalPosition.x + offsetX, originalPosition.y + offsetY) },
-          {
-            duration: 300,
-            easing: 'easeInOutQuad'
-          }
-        );
-
-        // Continue jiggling with random timing for organic feel
-        jiggleTimeout = setTimeout(jiggleLetter, 50 + Math.random() * 100);
-      }
-
-      var hue = 0;
-      var saturation = 0;
-
-      view.onFrame = function (event) {
-        buhText.rotate(3);
-
-        hue = (hue + 1) % 360;
-
-        buhText.fillColor = {
-          hue: hue,
-          saturation: 0.8,
-          lightness: 0.6
-        }
-
-        buddies.forEach((buddy, index) => {
-          var budHue = buddy.fillColor.hue;
-          var budScale = 2 + Math.sin((event.time + index * 10) * 2);
-          buddy.rotate(Math.pow(-1, (index % 2)) * 5);
-          buddy.scaling = [budScale, budScale];
-        });
-      }
-
-      // Handle window resize
-      window.addEventListener('resize', function () {
-        paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
-        buhText.position = view.center;
-        originalPosition.set(view.center);
-      });
-
-      const scaleFactor = 2;
-      const prefixes = ['b', 'h', 'g', 'pl', 'fl', 't', 'p', 'c', 'w', 'm'];
-      var buddies = [];
-
-      // Make the letter interactive
-      buhText.on('click', function () {
-        buddies.push(
-          new PointText({
-            point: view.center,
-            content: prefixes[Math.floor(Math.random() * prefixes.length)] + 'uh',
-            fillColor: buhText.fillColor,
-            fontFamily: 'Times New Roman',
-            fontWeight: 'bold',
-            fontSize: 40,
-            justification: 'center'
-          }));
-
-        var newBuddy = buddies[buddies.length - 1];
-        newBuddy.position = new Point(
-          Math.random() * view.size.width,
-          Math.random() * view.size.height
-        );
-        // Little bounce effect on click
-        buhText.tween(
-          { scaling: [scaleFactor, scaleFactor] },
-          {
-            duration: 150,
-            easing: 'easeInOutQuad'
-          }
-        );
-        setTimeout(function () {
-          buhText.tween(
-            { scaling: [1, 1] },
+          circle.tweenTo(
+            { position: pos },
             {
-              duration: 300,
+              duration: 175,
               easing: 'easeInOutQuad'
             }
           );
-        }, 300);
-      });
+
+          return circle;
+        });
+      }
+
+      window.addEventListener('resize', onResize);
+
+      // add zooming in to full size
+      function onResize(event) {
+        if (!loaded)
+          return
+        project.activeLayer.removeChildren();
+
+        var width = getSmallestPowerOf2(Math.min(window.innerWidth, window.innerHeight));
+        paper.view.viewSize = new Size(width, width);
+
+        raster.fitBounds(view.bounds, true);
+
+        var circle = new Path.Circle({
+          center: view.bounds.center,
+          radius: width / 2,
+          fillColor: raster.getAverageColor(view.bounds),
+          onMouseMove: (event) => moveHandler(event, new Point(view.bounds.center.x, view.bounds.center.y), width / 2)
+        });
+      }
+
+      function getSmallestPowerOf2(limit) {
+        var exp = 0;
+        while (Math.pow(2, exp) < limit) {
+          exp++;
+        }
+        return Math.pow(2, exp - 1);
+      }
     });
   </script>
 </body>
