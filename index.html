@@ -41,7 +41,8 @@
       var viewWidth = 1528; // hardcoded lol
       var viewHeight = 708;
 
-      var raster = new paper.Raster('buh.jpg');
+      var imgName = `peter${Math.floor(Math.random() * 5)}.jpg`;
+      var raster = new paper.Raster('images/' + imgName);
       var loaded = false;
       raster.on('load', () => {
         loaded = true;
