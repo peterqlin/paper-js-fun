@@ -2,8 +2,8 @@
 <html>
 
 <head>
-  <title>among ඞ us</title>
-  <link rel="icon" type="image/png" href="favicon.ico">
+  <title>Peter Lin</title>
+  <!-- <link rel="icon" type="image/png" href="favicon.ico"> -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
   <style>
     html,
@@ -14,7 +14,17 @@
       background-color: #f0f0f0;
     }
 
-    #paperCanvas {
+    #paper-canvas-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #paper-canvas {
+      width: 100%;
+      height: 100%;
       display: block;
     }
   </style>
@@ -25,35 +35,34 @@
   <script type="text/javascript">
     // inspired by koalastothemax.com
     document.addEventListener('DOMContentLoaded', () => {
-      paper.install(window);
-      paper.setup(document.createElement('canvas'));
-      document.body.appendChild(paper.view.element);
+      const canvas = document.getElementById('paper-canvas');
+      paper.setup(canvas);
+      // paper.install(window);
+      // paper.setup(document.createElement('canvas'));
+      // document.body.appendChild(paper.view.element);
 
-      var width = getSmallestPowerOf2(Math.min(window.innerWidth, window.innerHeight));
-      paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
+      paper.view.viewSize = new paper.Size(window.innerWidth, window.innerHeight);
 
-      var raster = new Raster('amongus.jpg');
+      var viewWidth = 1528; // hardcoded lol
+      var viewHeight = 708;
+
+      var raster = new paper.Raster('amongus.jpg');
       var loaded = false;
       raster.on('load', () => {
         loaded = true;
-        onResize();
+        init();
       });
 
-      raster.visible = false;
-
       function moveHandler(event, refCenter, radius) {
-        if (!loaded)
-          return;
-
-        if (radius < 4)
+        if (!loaded || radius < 4)
           return;
 
         event.target.remove();
 
-        var tempCircle = new Path.Circle({
+        var tempCircle = new paper.Path.Circle({
           center: refCenter,
           radius: radius,
-          fillColor: raster.getAverageColor(new Rectangle(refCenter.subtract([radius, radius]), new Size(radius * 2, radius * 2))),
+          fillColor: raster.getAverageColor(new paper.Rectangle(refCenter.subtract([radius, radius]), new paper.Size(radius * 2, radius * 2))),
           applyMatrix: false
         });
         tempCircle.tweenTo(
@@ -70,17 +79,17 @@
         radius /= 2;
 
         var positions = [
-          refCenter.add(new Point(-radius, -radius)),
-          refCenter.add(new Point(-radius, radius)),
-          refCenter.add(new Point(radius, -radius)),
-          refCenter.add(new Point(radius, radius)),
+          refCenter.add(new paper.Point(-radius, -radius)),
+          refCenter.add(new paper.Point(-radius, radius)),
+          refCenter.add(new paper.Point(radius, -radius)),
+          refCenter.add(new paper.Point(radius, radius)),
         ];
 
         var circles = positions.map(pos => {
-          var circle = new Path.Circle({
+          var circle = new paper.Path.Circle({
             center: refCenter,
             radius: radius,
-            fillColor: raster.getAverageColor(new Rectangle(pos.subtract([radius, radius]), new Size(radius * 2, radius * 2))),
+            fillColor: raster.getAverageColor(new paper.Rectangle(pos.subtract([radius, radius]), new paper.Size(radius * 2, radius * 2))),
             onMouseMove: (event) => moveHandler(event, pos, radius)
           });
 
@@ -96,23 +105,28 @@
         });
       }
 
-      window.addEventListener('resize', onResize);
+      function init(event) {
+        paper.project.activeLayer.removeChildren();
 
-      function onResize(event) {
-        if (!loaded)
-          return
-        project.activeLayer.removeChildren();
+        var width = getSmallestPowerOf2(Math.min(viewWidth, viewHeight));
+        var radius = width / 2;
 
-        var width = getSmallestPowerOf2(Math.min(window.innerWidth, window.innerHeight));
-        paper.view.viewSize = new Size(window.innerWidth, window.innerHeight);
+        var fitScreenScaleFactor = Math.max(viewWidth / raster.width, viewHeight / raster.height);
+        var marginPercent = 1.05;
+        var scaleFactor = Math.min(marginPercent * width / viewWidth, marginPercent * width / viewHeight);
 
-        raster.fitBounds(view.bounds, true);
+        paper.view.viewSize = new paper.Size(window.innerWidth, window.innerHeight);
+        // first scale to fit screen
+        raster.scale(fitScreenScaleFactor, fitScreenScaleFactor);
+        // then scale from the reference scale
+        raster.scale(scaleFactor, scaleFactor);
+        raster.position = new paper.Point(window.innerWidth / 2, window.innerHeight / 2);
 
-        var circle = new Path.Circle({
-          center: view.bounds.center,
-          radius: width / 2,
-          fillColor: raster.getAverageColor(view.bounds),
-          onMouseMove: (event) => moveHandler(event, new Point(view.bounds.center.x, view.bounds.center.y), width / 2),
+        var circle = new paper.Path.Circle({
+          center: paper.view.bounds.center,
+          radius: radius,
+          fillColor: raster.getAverageColor(paper.view.bounds),
+          onMouseMove: (event) => moveHandler(event, new paper.Point(paper.view.bounds.center.x, paper.view.bounds.center.y), radius),
           applyMatrix: false
         });
 
@@ -127,6 +141,7 @@
         );
       }
 
+      // ensure clean splits and no rounding needed
       function getSmallestPowerOf2(limit) {
         var exp = 0;
         while (Math.pow(2, exp) < limit) {
@@ -136,6 +151,9 @@
       }
     });
   </script>
+  <div id="paper-canvas-container">
+    <canvas id="paper-canvas" resize></canvas>
+  </div>
 </body>
 
 </html>
