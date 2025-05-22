@@ -23,8 +23,6 @@
     }
 
     #paper-canvas {
-      width: 100%;
-      height: 100%;
       display: block;
     }
   </style>
@@ -37,20 +35,18 @@
     document.addEventListener('DOMContentLoaded', () => {
       const canvas = document.getElementById('paper-canvas');
       paper.setup(canvas);
-      // paper.install(window);
-      // paper.setup(document.createElement('canvas'));
-      // document.body.appendChild(paper.view.element);
 
       paper.view.viewSize = new paper.Size(window.innerWidth, window.innerHeight);
 
       var viewWidth = 1528; // hardcoded lol
       var viewHeight = 708;
 
-      var raster = new paper.Raster('amongus.jpg');
+      var raster = new paper.Raster('buh.jpg');
       var loaded = false;
       raster.on('load', () => {
         loaded = true;
         init();
+        raster.visible = false;
       });
 
       function moveHandler(event, refCenter, radius) {
@@ -68,13 +64,13 @@
         tempCircle.tweenTo(
           { opacity: 0 },
           {
-            duration: 250,
+            duration: 300,
             easing: 'easeInOutQuad'
           }
         );
         setTimeout(() => {
           tempCircle.remove();
-        }, 250);
+        }, 300);
 
         radius /= 2;
 
@@ -96,7 +92,7 @@
           circle.tweenTo(
             { position: pos },
             {
-              duration: 250,
+              duration: 300,
               easing: 'easeInOutQuad'
             }
           );
@@ -106,21 +102,19 @@
       }
 
       function init(event) {
-        paper.project.activeLayer.removeChildren();
-
         var width = getSmallestPowerOf2(Math.min(viewWidth, viewHeight));
         var radius = width / 2;
-
         var fitScreenScaleFactor = Math.max(viewWidth / raster.width, viewHeight / raster.height);
-        var marginPercent = 1.05;
-        var scaleFactor = Math.min(marginPercent * width / viewWidth, marginPercent * width / viewHeight);
+        var scaleFactor = Math.min(1.05 * width / viewWidth, 1.05 * width / viewHeight);
 
-        paper.view.viewSize = new paper.Size(window.innerWidth, window.innerHeight);
-        // first scale to fit screen
-        raster.scale(fitScreenScaleFactor, fitScreenScaleFactor);
-        // then scale from the reference scale
-        raster.scale(scaleFactor, scaleFactor);
-        raster.position = new paper.Point(window.innerWidth / 2, window.innerHeight / 2);
+        // set the paper.js view to be size of the initial circle
+        paper.view.viewSize = new paper.Size(width, width);
+
+        // center the reference image
+        raster.position = new paper.Point(width / 2, width / 2);
+
+        // scale to fit the initial circle
+        raster.scale(fitScreenScaleFactor * scaleFactor, fitScreenScaleFactor * scaleFactor);
 
         var circle = new paper.Path.Circle({
           center: paper.view.bounds.center,
@@ -152,7 +146,7 @@
     });
   </script>
   <div id="paper-canvas-container">
-    <canvas id="paper-canvas" resize></canvas>
+    <canvas id="paper-canvas"></canvas>
   </div>
 </body>
 
