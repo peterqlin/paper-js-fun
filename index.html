@@ -38,12 +38,12 @@
 
       paper.view.viewSize = new paper.Size(window.innerWidth, window.innerHeight);
 
-      var viewWidth = 1528; // hardcoded lol
-      var viewHeight = 708;
+      const viewWidth = 1528; // hardcoded lol
+      const viewHeight = 708;
 
-      var imgName = `peter${Math.floor(Math.random() * 5)}.jpg`;
-      var raster = new paper.Raster('images/' + imgName);
-      var loaded = false;
+      const imgName = `peter${Math.floor(Math.random() * 5)}.jpg`;
+      const raster = new paper.Raster('images/' + imgName);
+      let loaded = false;
       raster.on('load', () => {
         loaded = true;
         init();
@@ -56,7 +56,7 @@
 
         event.target.remove();
 
-        var tempCircle = new paper.Path.Circle({
+        const tempCircle = new paper.Path.Circle({
           center: refCenter,
           radius: radius,
           fillColor: raster.getAverageColor(new paper.Rectangle(refCenter.subtract([radius, radius]), new paper.Size(radius * 2, radius * 2))),
@@ -75,15 +75,15 @@
 
         radius /= 2;
 
-        var positions = [
+        const positions = [
           refCenter.add(new paper.Point(-radius, -radius)),
           refCenter.add(new paper.Point(-radius, radius)),
           refCenter.add(new paper.Point(radius, -radius)),
           refCenter.add(new paper.Point(radius, radius)),
         ];
 
-        var circles = positions.map(pos => {
-          var circle = new paper.Path.Circle({
+        const circles = positions.map(pos => {
+          const circle = new paper.Path.Circle({
             center: refCenter,
             radius: radius,
             fillColor: raster.getAverageColor(new paper.Rectangle(pos.subtract([radius, radius]), new paper.Size(radius * 2, radius * 2))),
@@ -103,10 +103,10 @@
       }
 
       function init(event) {
-        var width = getLargestPowerOf2(Math.min(viewWidth, viewHeight));
-        var radius = width / 2;
-        var fitScreenScaleFactor = Math.max(viewWidth / raster.width, viewHeight / raster.height);
-        var scaleFactor = Math.min(1.05 * width / viewWidth, 1.05 * width / viewHeight);
+        const width = getLargestPowerOf2(Math.min(viewWidth, viewHeight));
+        let radius = width / 2;
+        const fitScreenScaleFactor = Math.max(viewWidth / raster.width, viewHeight / raster.height);
+        const scaleFactor = Math.min(1.05 * width / viewWidth, 1.05 * width / viewHeight);
 
         // set the paper.js view to be size of the initial circle
         paper.view.viewSize = new paper.Size(width, width);
@@ -117,7 +117,7 @@
         // scale to fit the initial circle
         raster.scale(fitScreenScaleFactor * scaleFactor, fitScreenScaleFactor * scaleFactor);
 
-        var circle = new paper.Path.Circle({
+        const circle = new paper.Path.Circle({
           center: paper.view.bounds.center,
           radius: radius,
           fillColor: raster.getAverageColor(paper.view.bounds),
@@ -138,7 +138,7 @@
 
       // ensure clean splits and no rounding needed
       function getLargestPowerOf2(limit) {
-        var exp = 0;
+        let exp = 0;
         while (Math.pow(2, exp) < limit) {
           exp++;
         }
