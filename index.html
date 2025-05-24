@@ -103,7 +103,7 @@
       }
 
       function init(event) {
-        var width = getSmallestPowerOf2(Math.min(viewWidth, viewHeight));
+        var width = getLargestPowerOf2(Math.min(viewWidth, viewHeight));
         var radius = width / 2;
         var fitScreenScaleFactor = Math.max(viewWidth / raster.width, viewHeight / raster.height);
         var scaleFactor = Math.min(1.05 * width / viewWidth, 1.05 * width / viewHeight);
@@ -137,7 +137,7 @@
       }
 
       // ensure clean splits and no rounding needed
-      function getSmallestPowerOf2(limit) {
+      function getLargestPowerOf2(limit) {
         var exp = 0;
         while (Math.pow(2, exp) < limit) {
           exp++;
